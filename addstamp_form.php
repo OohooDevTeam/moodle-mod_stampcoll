@@ -37,7 +37,7 @@ class stampcoll_stamp_form extends moodleform {
      * Defines the form elements
      */
     public function definition() {
-        global $OUTPUT;
+        global $OUTPUT, $DB;
 
         $mform = $this->_form;
         $data  = $this->_customdata;
@@ -62,6 +62,16 @@ class stampcoll_stamp_form extends moodleform {
         //----------------------------------------------------------------------
         $mform->addElement('textarea', 'text', get_string('stamptext', 'stampcoll'), array('cols' => 40, 'rows' => 5));
         $mform->setType('text', PARAM_RAW);
+
+        //----------------------------------------------------------------------
+        $imgvalues = array();
+        $records = $DB->get_records('stampcoll_images', array('stampcollid' => $data['stampcollid']));
+        foreach ($records as $record) {
+            $imgvalues[$record->id] = $record->name;
+        }
+        $imgvalues[0] = 'Default Stamp';
+        $mform->addElement('select', 'stamptype', get_string('stampimage', 'stampcoll'), $imgvalues);
+        $mform->setType('stamptype', PARAM_INT);
 
         //----------------------------------------------------------------------
         $mform->addGroup(array(

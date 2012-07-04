@@ -46,7 +46,7 @@ $PAGE->set_heading($course->fullname);
 
 require_capability('mod/stampcoll:givestamps', $stampcoll->context);
 
-$form = new stampcoll_stamp_form();
+$form = new stampcoll_stamp_form(null, array('stampcollid' => $stampcoll->id));
 
 if ($data = $form->get_data()) {
 
@@ -65,6 +65,7 @@ if ($data = $form->get_data()) {
         'userid'        => $data->userto,
         'giver'         => $data->userfrom,
         'text'          => $data->text,
+        'image'         => $data->stamptype,
         'timecreated'   => time()));
 
     redirect(new moodle_url('/mod/stampcoll/view.php', array('id' => $cm->id, 'view' => 'single', 'userid' => $data->userto)));

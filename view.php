@@ -126,7 +126,7 @@ if ($view == 'own') {
     }
 
     // construct the sql returning all stamp info to display
-    $sql = "SELECT s.id AS stampid, s.userid AS holderid, s.text AS stamptext,
+    $sql = "SELECT s.id AS stampid, s.userid AS holderid, s.text AS stamptext, s.image AS image,
                    s.timecreated AS stamptimecreated, s.timemodified AS stamptimemodified,".
                    user_picture::fields('gu', null, 'giverid', 'giver')."
               FROM {stampcoll_stamps} s
@@ -149,6 +149,7 @@ if ($view == 'own') {
                 'userid'        => $record->holderid,
                 'giver'         => $record->giverid,
                 'text'          => $record->stamptext,
+                'image'        => $record->image,
                 'timecreated'   => $record->stamptimecreated,
                 'timemodified'  => $record->stamptimemodified,
             );
@@ -176,7 +177,7 @@ if ($view == 'own') {
     }
 
     // construct the sql returning all stamp info to display
-    $sql = "SELECT s.id AS stampid, s.userid AS holderid, s.text AS stamptext,
+    $sql = "SELECT s.id AS stampid, s.userid AS holderid, s.text AS stamptext, s.image AS image,
                    s.timecreated AS stamptimecreated, s.timemodified AS stamptimemodified,".
                    user_picture::fields('gu', null, 'giverid', 'giver')."
               FROM {stampcoll_stamps} s
@@ -200,6 +201,7 @@ if ($view == 'own') {
                 'userid'        => $record->holderid,
                 'giver'         => $record->giverid,
                 'text'          => $record->stamptext,
+                'image'         => $record->image,
                 'timecreated'   => $record->stamptimecreated,
                 'timemodified'  => $record->stamptimemodified,
             );
@@ -212,14 +214,15 @@ if ($view == 'own') {
 
     // append a form to give a new stamp
     if (has_capability('mod/stampcoll:collectstamps', $stampcoll->context, $user, false) and
-        has_capability('mod/stampcoll:givestamps', $stampcoll->context, $USER)) {
+            has_capability('mod/stampcoll:givestamps', $stampcoll->context, $USER)) {
 
         $form = new stampcoll_stamp_form(
-            new moodle_url('/mod/stampcoll/addstamp.php', array('scid' => $stampcoll->id)),
-            array(
-                'userfrom' => $USER,
-            ),
-            'post', '', array('class' => 'stampform'));
+                        new moodle_url('/mod/stampcoll/addstamp.php', array('scid' => $stampcoll->id)),
+                        array(
+                            'userfrom'    => $USER,
+                            'stampcollid' => $stampcoll->id
+                        ),
+                        'post', '', array('class' => 'stampform'));
 
         $form->set_data(array(
             'userfrom'  => $USER->id,
@@ -307,7 +310,7 @@ if ($view == 'own') {
         list($holdersql, $holderparam) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
 
         $sql = "SELECT ".user_picture::fields('hu', null, 'holderid', 'holder').",
-                       s.id AS stampid, s.text AS stamptext,
+                       s.id AS stampid, s.text AS stamptext, s.image AS image,
                        s.timecreated AS stamptimecreated, s.timemodified AS stamptimemodified,".
                        user_picture::fields('gu', null, 'giverid', 'giver')."
                   FROM {user} hu
@@ -332,6 +335,7 @@ if ($view == 'own') {
                     'userid'        => $record->holderid,
                     'giver'         => $record->giverid,
                     'text'          => $record->stamptext,
+                    'image'         => $record->image,
                     'timecreated'   => $record->stamptimecreated,
                     'timemodified'  => $record->stamptimemodified,
                 );

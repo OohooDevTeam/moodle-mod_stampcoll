@@ -26,7 +26,6 @@
  * @copyright  2007 David Mudrak <david@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,20 +64,24 @@ function stampcoll_add_instance(stdClass $stampcoll, mod_stampcoll_mod_form $mfo
     $stampcoll->image = null;
 
     $context = get_context_instance(CONTEXT_MODULE, $stampcoll->coursemodule);
-    $imageoptions = array('subdirs' => false, 'maxfiles' => 1, 'accepted_types' => array('image'),
+    $imageoptions = array('subdirs' => false, 'accepted_types' => array('image'),
         'maxbytes' => $COURSE->maxbytes, 'return_types' => FILE_INTERNAL);
+     // save the new record into the database and get its id
+    $stampcoll->id = $DB->insert_record('stampcoll', $stampcoll);
     if ($draftitemid = file_get_submitted_draft_itemid('image')) {
-        file_save_draft_area_files($draftitemid, $context->id, 'mod_stampcoll', 'image', 0, $imageoptions);
+        file_save_draft_area_files($draftitemid, $context->id, 'mod_stampcoll', 'image', $stampcoll->id, $imageoptions);
         $fs = get_file_storage();
-        foreach ($fs->get_area_files($context->id, 'mod_stampcoll', 'image', 0, 'timemodified DESC', false) as $storedfile) {
-            $stampcoll->image = $storedfile->get_filename();
-            // note: $storedfile->get_imageinfo() returns width, height and mimetype
-            break;
+        foreach ($fs->get_area_files($context->id, 'mod_stampcoll', 'image', $stampcoll->id, 'timemodified DESC', false) as $storedfile) {
+            $record = new stdClass();
+            $record->stampcollid = $stampcoll->id;
+            $record->filename = $storedfile->get_filename();
+            $record->name = $storedfile->get_filename();
+
+            $DB->insert_record('stampcoll_images', $record);
         }
     }
 
-    // save the new record into the database and reload it
-    return $DB->insert_record('stampcoll', $stampcoll);
+    return $stampcoll->id;
 }
 
 /**
@@ -95,16 +98,28 @@ function stampcoll_update_instance(stdClass $stampcoll, mod_stampcoll_mod_form $
     $stampcoll->timemodified = time();
 
     $context = get_context_instance(CONTEXT_MODULE, $stampcoll->coursemodule);
-    $imageoptions = array('subdirs' => false, 'maxfiles' => 1, 'accepted_types' => array('image'),
+    $imageoptions = array('subdirs' => false, 'accepted_types' => array('image'),
         'maxbytes' => $COURSE->maxbytes, 'return_types' => FILE_INTERNAL);
     if ($draftitemid = file_get_submitted_draft_itemid('image')) {
         $stampcoll->image = null;
-        file_save_draft_area_files($draftitemid, $context->id, 'mod_stampcoll', 'image', 0, $imageoptions);
+        file_save_draft_area_files($draftitemid, $context->id, 'mod_stampcoll', 'image', $stampcoll->id, $imageoptions);
         $fs = get_file_storage();
-        foreach ($fs->get_area_files($context->id, 'mod_stampcoll', 'image', 0, 'timemodified DESC', false) as $storedfile) {
-            $stampcoll->image = $storedfile->get_filename();
-            // note: $storedfile->get_imageinfo() returns width, height and mimetype
-            break;
+        foreach ($fs->get_area_files($context->id, 'mod_stampcoll', 'image', $stampcoll->id, 'timemodified DESC', false) as $storedfile) {
+            $record = $DB->get_record('stampcoll_images', array('stampcollid' => $stampcoll->id, 'filename' => $storedfile->get_filename()));
+            if ($record === false) {
+                $record = new stdClass();
+                $record->stampcollid = $stampcoll->id;
+                $record->filename = $storedfile->get_filename();
+                $record->name = $storedfile->get_filename();
+
+                $DB->insert_record('stampcoll_images', $record);
+            }
+        }
+        foreach ($DB->get_records('stampcoll_images', array('stampcollid' => $stampcoll->id)) as $record) {
+            if (!$fs->file_exists($context->id, 'mod_stampcoll', 'image', $stampcoll->id, '/', $record->filename)) {
+                $DB->delete_records('stampcoll_images', array('stampcollid' => $stampcoll->id, 'filename' => $record->filename));
+                //set deleted stamps to a default icon
+            }
         }
     }
 
@@ -126,6 +141,7 @@ function stampcoll_delete_instance($id) {
         return false;
     }
 
+    $DB->delete_records('stampcoll_images', array('stampcollid' => $stampcoll->id));
     $DB->delete_records('stampcoll_stamps', array('stampcollid' => $stampcoll->id));
     $DB->delete_records('stampcoll', array('id' => $stampcoll->id));
 
@@ -328,15 +344,15 @@ function stampcoll_get_recent_mod_activity(&$activities, &$index, $timestart, $c
         }
 
         $tmpactivity = (object)array(
-            'type' => 'stampcoll',
-            'cmid' => $cm->id,
-            'name' => format_string($cm->name, true),
-            'sectionnum' => $cm->sectionnum,
+                    'type' => 'stampcoll',
+                    'cmid' => $cm->id,
+                    'name' => format_string($cm->name, true),
+                    'sectionnum' => $cm->sectionnum,
             'stamp' => (object)array(
-                'id' => $stamp->id,
-                'timemodified' => $stamp->timemodified,
-            ),
-            'user' => user_picture::unalias($stamp, null, 'userid')
+                        'id' => $stamp->id,
+                        'timemodified' => $stamp->timemodified,
+                    ),
+                    'user' => user_picture::unalias($stamp, null, 'userid')
         );
 
         $activities[$index++] = $tmpactivity;
@@ -494,7 +510,7 @@ function stampcoll_extend_navigation(navigation_node $navref, stdclass $course, 
  * @param settings_navigation $settingsnav {@link settings_navigation}
  * @param navigation_node $stampcollnode {@link navigation_node}
  */
-function stampcoll_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $stampcollnode=null) {
+function stampcoll_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $stampcollnode = null) {
     global $PAGE;
 
     if (has_capability('mod/stampcoll:managestamps', $PAGE->cm->context)) {

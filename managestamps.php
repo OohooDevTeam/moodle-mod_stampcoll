@@ -125,19 +125,20 @@ if ($data = data_submitted()) {
                 'userid'        => $holderid,
                 'giver'         => $USER->id,
                 'text'          => $text,
+                'image'         => $data->addnewtype[$holderid],
                 'timecreated'   => $now),
             false, true);
         }
     }
 
     // update existing stamps
-    if (!empty($data->stampnewtext) and is_array($data->stampnewtext)) {
+    if (!empty($data->stampnewtext) and is_array($data->stampnewtext) and !empty($data->stampnewtype) and is_array($data->stampnewtype)) {
 
         // get the list of stamps that can be modified via this bulk operation
         list($subsql1, $params1) = $DB->get_in_or_equal(array_keys($data->stampnewtext));
         list($subsql2, $params2) = $DB->get_in_or_equal($holderids);
         $params = array_merge(array($stampcoll->id), $params1, $params2);
-        $stamps = $DB->get_records_select('stampcoll_stamps', "stampcollid = ? AND id $subsql1 AND userid $subsql2", $params, '', 'id, userid, text');
+        $stamps = $DB->get_records_select('stampcoll_stamps', "stampcollid = ? AND id $subsql1 AND userid $subsql2", $params, '', 'id, userid, text, image');
         $stampids = array_keys($stamps);
 
         foreach ($data->stampnewtext as $stampid => $text) {
@@ -152,10 +153,13 @@ if ($data = data_submitted()) {
             }
             $current = $stamps[$stampid];
 
-            if ($current->text !== $text) {
+            $image = $data->stampnewtype[$stampid];
+
+            if ($current->text !== $text || $current->image !== $image) {
                 $update = new stdClass();
                 $update->id = $stampid;
                 $update->text = $text;
+                $update->image = $image;
                 $update->timemodified = $now;
                 $update->modifier = $USER->id;
 
@@ -166,6 +170,36 @@ if ($data = data_submitted()) {
         }
     }
 
+    // update stamp names
+    if (!empty($data->stampnewname) and is_array($data->stampnewname)) {
+
+        // get the list of stamps that can be modified via this bulk operation;
+        $stamps = $DB->get_records('stampcoll_images', array('stampcollid' => $stampcoll->id));
+        $stampids = array_keys($stamps);
+
+        foreach ($data->stampnewname as $stampid => $name) {
+            $stampid = clean_param($stampid, PARAM_INT);
+            if (empty($stampid)) {
+                debugging('Invalid stampid');
+                continue;
+            }
+            if (!in_array($stampid, $stampids)) {
+                debugging('Invalid stamp record '.$stampid);
+                continue;
+            }
+            $current = $stamps[$stampid];
+
+            if ($current->name !== $name) {
+                $update = new stdClass();
+                $update->id = $stampid;
+                $update->name = $name;
+
+                add_to_log($course->id, 'stampcoll', 'update stamp names', 'view.php?id='.$cm->id, $USER->id, $cm->id);
+
+                $DB->update_record('stampcoll_images', $update, true);
+            }
+        }
+    }
     redirect($PAGE->url);
 }
 
@@ -232,7 +266,7 @@ if ($userids) {
     list($holdersql, $holderparam) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
 
     $sql = "SELECT ".user_picture::fields('hu', null, 'holderid', 'holder').",
-                   s.id AS stampid, s.text AS stamptext,
+                   s.id AS stampid, s.text AS stamptext, s.image AS image,
                    s.timecreated AS stamptimecreated, s.timemodified AS stamptimemodified,".
                    user_picture::fields('gu', null, 'giverid', 'giver')."
               FROM {user} hu
@@ -257,6 +291,7 @@ if ($userids) {
                 'userid'        => $record->holderid,
                 'giver'         => $record->giverid,
                 'text'          => $record->stamptext,
+                'image'         => $record->image,
                 'timecreated'   => $record->stamptimecreated,
                 'timemodified'  => $record->stamptimemodified,
             );

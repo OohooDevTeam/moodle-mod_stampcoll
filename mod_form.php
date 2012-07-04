@@ -58,7 +58,7 @@ class mod_stampcoll_mod_form extends moodleform_mod {
         $mform->addElement('header', 'stampcollection', get_string('modulename', 'stampcoll'));
 
         // Stamp image
-        $imageoptions = array('subdirs' => false, 'maxfiles' => 1, 'accepted_types' => array('image'),
+        $imageoptions = array('subdirs' => false, 'accepted_types' => array('image'),
             'maxbytes' => $COURSE->maxbytes, 'return_types' => FILE_INTERNAL);
         $mform->addElement('filemanager', 'image', get_string('stampimage', 'stampcoll'), null, $imageoptions);
 
@@ -90,9 +90,9 @@ class mod_stampcoll_mod_form extends moodleform_mod {
 
         if ($this->current->instance) {
             $draftitemid = file_get_submitted_draft_itemid('image');
-            $options = array('subdirs' => false, 'maxfiles' => 1, 'accepted_types' => array('image'),
+            $options = array('subdirs' => false, 'accepted_types' => array('image'),
                 'maxbytes' => $COURSE->maxbytes, 'return_types' => FILE_INTERNAL);
-            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_stampcoll', 'image', 0, $options);
+            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_stampcoll', 'image', $this->current->id, $options);
             $defaultvalues['image'] = $draftitemid;
         }
     }

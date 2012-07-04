@@ -23,7 +23,6 @@
  * @copyright  2011 David Mudrak <david@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -34,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * $stampcoll, $cm and $course records at the begining of the script.
  */
 class stampcoll {
-
     /** default number of users per page when displaying reports */
     const USERS_PER_PAGE = 30;
 
@@ -161,9 +159,12 @@ class stampcoll_stamp implements renderable {
         if (isset($record->timemodified)) {
             $this->timemodified = $record->timemodified;
         }
+        if (isset($record->image)) {
+            $this->image = $record->image;
+        }
     }
-}
 
+}
 
 /**
  * Base collection of stamps to be displayed
@@ -287,7 +288,6 @@ abstract class stampcoll_collection {
     }
 }
 
-
 /**
  * Collection of single user's stamps
  */
@@ -317,7 +317,6 @@ class stampcoll_singleuser_collection extends stampcoll_collection implements re
         return $this->get_user_info($this->holderid);
     }
 }
-
 
 /**
  * Collection of multiple users' stamps
@@ -367,7 +366,6 @@ class stampcoll_multiuser_collection extends stampcoll_collection implements ren
         return $holders;
     }
 }
-
 
 /**
  * Collection of multiple users' stamps used at the managestamps.php screen

@@ -47,6 +47,12 @@
     width: 60%;
 }
 
+.stamp {
+    max-height: 35px;
+    max-width: 35px;
+    padding: 2px;
+}
+
 /**
  * Single user collection
  */
@@ -66,9 +72,15 @@
     width: 90%;
     margin: 1em auto;
 }
+#page-mod-stampcoll-managestamps table.stamp.management {
+    width: 30%;
+    margin: 1em auto;
+}
 
 #page-mod-stampcoll-managestamps table.collection.management td,
-#page-mod-stampcoll-managestamps table.collection.management th {
+#page-mod-stampcoll-managestamps table.collection.management th,
+#page-mod-stampcoll-managestamps table.stamp.management td,
+#page-mod-stampcoll-managestamps table.stamp.management th {
     border-width: 1px;
     border-style: solid;
     border-color: #DDDDDD;

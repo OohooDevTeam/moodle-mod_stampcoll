@@ -41,15 +41,23 @@ class backup_stampcoll_activity_structure_step extends backup_activity_structure
         $stamps = new backup_nested_element('stamps');
 
         $stamp = new backup_nested_element('stamp', array('id'), array(
-            'userid', 'text', 'giver', 'timecreated', 'modifier', 'timemodified'));
+            'userid', 'text', 'image', 'giver', 'timecreated', 'modifier', 'timemodified'));
+
+        $images = new backup_nested_element('images');
+
+        $image = new backup_nested_element('image', array('id'), array(
+            'filename', 'name'));
 
         $stampcoll->add_child($stamps);
         $stamps->add_child($stamp);
+        $stampcoll->add_child($images);
+        $stamps->add_child($image);
 
         $stampcoll->set_source_table('stampcoll', array('id' => backup::VAR_ACTIVITYID));
 
         if ($userinfo) {
             $stamp->set_source_table('stampcoll_stamps', array('stampcollid' => backup::VAR_PARENTID));
+            $stamp->set_source_table('stampcoll_images', array('stampcollid' => backup::VAR_PARENTID));
         }
 
         $stamp->annotate_ids('user', 'userid');

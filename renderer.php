@@ -38,16 +38,17 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
      * @return string HTML
      */
     protected function render_stampcoll_stamp(stampcoll_stamp $stamp) {
+        global $DB;
 
-        if (empty($stamp->stampcoll->image)) {
+        $record = $DB->get_record('stampcoll_images', array('id' => $stamp->image));
+        if ($record === false) {
             $src = $this->pix_url('defaultstamp', 'mod_stampcoll');
-
         } else {
-            $src = moodle_url::make_pluginfile_url($stamp->stampcoll->context->id, 'mod_stampcoll', 'image', 0, '/', $stamp->stampcoll->image);
+            $src = moodle_url::make_pluginfile_url($stamp->stampcoll->context->id, 'mod_stampcoll', 'image', $stamp->stampcoll->id, '/', $record->filename);
         }
 
         $attributes = array('src' => $src, 'alt' => s($stamp->text), 'title' => s($stamp->text), 'class' => 'stamp');
-        $stampimg   = html_writer::empty_tag('img', $attributes);
+        $stampimg = html_writer::empty_tag('img', $attributes);
 
         return $stampimg;
     }
@@ -162,6 +163,7 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
      * @return string HTML
      */
     protected function render_stampcoll_management_collection(stampcoll_management_collection $collection) {
+        global $DB;
 
         $holders = $collection->list_stamp_holders();
 
@@ -187,7 +189,14 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
         $sortbycount = $this->helper_sortable_heading(get_string('numberofstamps', 'stampcoll'),
             'count', $collection->sortedby, $collection->sortedhow);
 
-        $table->head = array('', $sortbyname, $sortbycount, 'Text', 'Given on', 'Given by', 'Action'); // TODO localize
+        $table->head = array('', $sortbyname, $sortbycount, 'Text', 'Stamp', 'Given on', 'Given by', 'Action'); // TODO localize
+
+        $imgvalues = array();
+        $records = $DB->get_records('stampcoll_images', array('stampcollid' => $collection->stampcoll->id));
+        foreach ($records as $record) {
+            $imgvalues[$record->id] = $record->name;
+        }
+        $imgvalues[0] = 'Default Stamp';
 
         foreach ($holders as $holder) {
             $picture    = $this->output->user_picture($holder);
@@ -200,14 +209,19 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
 
             $textform = html_writer::tag('textarea', '', array('name' => 'addnewstamp['.$holder->id.']'));
 
-            $row = new html_table_row(array($picture, $fullname, $count, $textform));
+            $stamptype = html_writer::select($imgvalues, 'addnewtype['.$holder->id.']', null, false);
+
+            $row = new html_table_row(array($picture, $fullname, $count, $textform, $stamptype));
             $row->attributes['class'] = 'holderinfo';
             foreach ($row->cells as $cell) {
                 $cell->rowspan = $count + 1;
             }
-            // make the cell for adding new stamp spanning over stamp-info cells
+
+            // make textarea cell only span one row
+            $row->cells[count($row->cells) - 2]->rowspan = 1;
+            // make the cell for selecting stamp type span over stamp-info cells
             $cell->rowspan = 1;
-            $cell->colspan = 4;
+            $cell->colspan = 5;
             $table->data[] = $row;
 
             if (!empty($collected)) {
@@ -225,6 +239,8 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
                     }
                     $row = new html_table_row(array(
                         $newtext.$oldtext,
+                        html_writer::select($imgvalues, 'stampnewtype['.$stamp->id.']', $stamp->image, false).html_writer::empty_tag('input',
+                            array('value' => s($stamp->image), 'type' => 'hidden', 'name' => 'stampoldtype['.$stamp->id.']')),
                         userdate($stamp->timecreated, get_string('strftimedate', 'core_langconfig')),
                         $giver,
                         html_writer::link(new moodle_url($this->page->url, array('delete' => $stamp->id)), get_string('deletestamp', 'mod_stampcoll')),
@@ -235,6 +251,26 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
             }
         }
 
+        /////////////////////////////////////////////////////////////////////////////
+        $nametable = new html_table();
+        $nametable->attributes['class'] = 'stamp management';
+        $nametable->head = array('Stamp', 'Name'); // TODO localize
+
+        foreach ($records as $record) {
+            $src = moodle_url::make_pluginfile_url($collection->stampcoll->context->id, 'mod_stampcoll', 'image', $collection->stampcoll->id, '/', $record->filename);
+            $img = html_writer::empty_tag('img', array('src' => $src, 'class' => 'stamp'));
+
+            $name = html_writer::tag('textarea', s($record->name), array('name' => 'stampnewname['.$record->id.']'));
+            $oldname = html_writer::empty_tag('input',
+                        array('value' => s($record->name), 'type' => 'hidden', 'name' => 'stampoldname['.$record->id.']'));
+
+            $row = new html_table_row(array($img, $name.$oldname));
+
+            $row->attributes['class'] = 'holderinfo';
+            $nametable->data[] = $row;
+        }
+        //////////////////////////////////////////////////////////////////////////////
+
         $htmltable = html_writer::table($table);
         $htmlsubmit = html_writer::tag('div',
             html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('updatestamps', 'mod_stampcoll'))).
@@ -243,8 +279,15 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
         $htmlform = html_writer::tag('form', $htmltable . $htmlsubmit,
             array('id' => 'stampsmanager', 'action' => $this->page->url->out(), 'method' => 'post'));
         $htmlpreferences = $this->helper_preferences_form($collection->perpage);
+        $htmlnametable = html_writer::table($nametable);
+        $htmlnamesubmit = html_writer::tag('div',
+            html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('updatestamps', 'mod_stampcoll'))).
+            html_writer::empty_tag('input', array('type' => 'hidden', 'value' => sesskey(), 'name' => 'sesskey')),
+            array('class' => 'submitwrapper'));
+        $htmlnameform = html_writer::tag('form', $htmlnametable . $htmlnamesubmit,
+            array('id' => 'stampsmanager', 'action' => $this->page->url->out(), 'method' => 'post'));
 
-        return $htmlpagingbar . $htmlform . $htmlpagingbar . $htmlpreferences;
+        return $htmlpagingbar . $htmlform . $htmlpagingbar . $htmlpreferences . $htmlnameform;
     }
 
     ////////////////////////////////////////////////////////////////////////////

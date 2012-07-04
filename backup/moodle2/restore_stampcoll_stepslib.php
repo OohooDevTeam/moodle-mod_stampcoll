@@ -39,6 +39,7 @@ class restore_stampcoll_activity_structure_step extends restore_activity_structu
         $paths[] = new restore_path_element('stampcoll', '/activity/stampcoll');
         if ($userinfo) {
             $paths[] = new restore_path_element('stampcoll_stamp', '/activity/stampcoll/stamps/stamp');
+            $paths[] = new restore_path_element('stampcoll_image', '/activity/stampcoll/images/image');
         }
 
         return $this->prepare_activity_structure($paths);
@@ -73,6 +74,15 @@ class restore_stampcoll_activity_structure_step extends restore_activity_structu
         }
 
         $DB->insert_record('stampcoll_stamps', $data);
+    }
+
+    protected function process_stampcoll_image($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $data->stampcollid = $this->get_new_parentid('stampcoll');
+
+        $DB->insert_record('stampcoll_images', $data);
     }
 
     protected function after_execute() {
