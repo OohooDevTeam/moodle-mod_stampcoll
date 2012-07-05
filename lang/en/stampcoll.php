@@ -61,6 +61,7 @@ $string['stampcoll:viewownstamps'] = 'View own stamps';
 $string['stampimage'] = 'Stamp image';
 $string['stampimageinfo'] = 'Recommended size is 35x35 pixels. If left empty, the default image will be used.';
 $string['stamptext'] = 'Text';
+$string['pickastamp'] = '--Pick a stamp--';
 $string['studentsperpage'] = 'Students per page';
 $string['timemodified'] = 'Last change';
 $string['updatestamps'] = 'Update stamps';

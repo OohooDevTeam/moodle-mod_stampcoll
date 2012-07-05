@@ -36,7 +36,7 @@ class backup_stampcoll_activity_structure_step extends backup_activity_structure
         $userinfo = $this->get_setting_value('userinfo');
 
         $stampcoll = new backup_nested_element('stampcoll', array('id'), array(
-            'name', 'intro', 'introformat', 'image', 'timemodified', 'displayzero'));
+            'name', 'intro', 'introformat', 'timemodified', 'displayzero'));
 
         $stamps = new backup_nested_element('stamps');
 
@@ -65,7 +65,6 @@ class backup_stampcoll_activity_structure_step extends backup_activity_structure
         $stamp->annotate_ids('user', 'modifier');
 
         $stampcoll->annotate_files('mod_stampcoll', 'intro', null);
-        $stampcoll->annotate_files('mod_stampcoll', 'image', null);
 
         return $this->prepare_activity_structure($stampcoll);
     }

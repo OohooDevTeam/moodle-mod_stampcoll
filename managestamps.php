@@ -113,7 +113,10 @@ if ($data = data_submitted()) {
                 continue;
             }
             $text = trim($text);
-            if ($text === '') {
+
+            $image = $data->addnewtype[$holderid];
+
+            if (!is_numeric($image)) {
                 // in the bulk mode, only stamps with text can be added
                 continue;
             }
@@ -125,7 +128,7 @@ if ($data = data_submitted()) {
                 'userid'        => $holderid,
                 'giver'         => $USER->id,
                 'text'          => $text,
-                'image'         => $data->addnewtype[$holderid],
+                'image'         => $image,
                 'timecreated'   => $now),
             false, true);
         }

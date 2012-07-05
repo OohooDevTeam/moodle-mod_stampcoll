@@ -61,7 +61,6 @@ function stampcoll_add_instance(stdClass $stampcoll, mod_stampcoll_mod_form $mfo
     global $DB, $COURSE;
 
     $stampcoll->timemodified = time();
-    $stampcoll->image = null;
 
     $context = get_context_instance(CONTEXT_MODULE, $stampcoll->coursemodule);
     $imageoptions = array('subdirs' => false, 'accepted_types' => array('image'),
@@ -101,7 +100,6 @@ function stampcoll_update_instance(stdClass $stampcoll, mod_stampcoll_mod_form $
     $imageoptions = array('subdirs' => false, 'accepted_types' => array('image'),
         'maxbytes' => $COURSE->maxbytes, 'return_types' => FILE_INTERNAL);
     if ($draftitemid = file_get_submitted_draft_itemid('image')) {
-        $stampcoll->image = null;
         file_save_draft_area_files($draftitemid, $context->id, 'mod_stampcoll', 'image', $stampcoll->id, $imageoptions);
         $fs = get_file_storage();
         foreach ($fs->get_area_files($context->id, 'mod_stampcoll', 'image', $stampcoll->id, 'timemodified DESC', false) as $storedfile) {

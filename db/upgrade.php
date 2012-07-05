@@ -360,7 +360,12 @@ function xmldb_stampcoll_upgrade($oldversion = 0) {
     /**
      * Add a table to store information about stamp images
      */
-    if ($oldversion < 2012070400) {
+    if ($oldversion < 2012070500) {
+        $table = new xmldb_table('stampcoll');
+        $field = new xmldb_field('image');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
         $table = new xmldb_table('stampcoll_images');
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('stampcollid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null);
@@ -374,12 +379,14 @@ function xmldb_stampcoll_upgrade($oldversion = 0) {
         }
 
         $table = new xmldb_table('stampcoll_stamps');
+        $field = new xmldb_field('text', XMLDB_TYPE_CHAR, '500', null, XMLDB_NOTNULL, null, null, 'modifier');
+        $dbman->change_field_precision($table, $field);
         $field = new xmldb_field('image', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'text');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2012070400, 'stampcoll');
+        upgrade_mod_savepoint(true, 2012070500, 'stampcoll');
     }
 
     return true;

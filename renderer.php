@@ -192,6 +192,7 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
         $table->head = array('', $sortbyname, $sortbycount, 'Text', 'Stamp', 'Given on', 'Given by', 'Action'); // TODO localize
 
         $imgvalues = array();
+        $imgvalues['pickastamp'] = get_string('pickastamp', 'mod_stampcoll');
         $records = $DB->get_records('stampcoll_images', array('stampcollid' => $collection->stampcoll->id));
         foreach ($records as $record) {
             $imgvalues[$record->id] = $record->name;

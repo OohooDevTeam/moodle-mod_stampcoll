@@ -57,9 +57,6 @@ class stampcoll {
     /** @var int format of the {@link $intro} */
     public $introformat;
 
-    /** @var null|string null to use the default image name, the file name otherwise */
-    public $image;
-
     /** @var int the last modification time stamps */
     public $timemodified;
 
