@@ -92,4 +92,13 @@ $capabilities = array(
             'editingteacher' => CAP_ALLOW,
         )
     ),
+    //Can add instances
+    'mod/stampcoll:addinstance' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => array(
+            'teacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    )
 );

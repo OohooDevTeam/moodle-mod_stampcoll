@@ -1,0 +1,9 @@
+StampCollection
+
+A collection of stamps that a teacher can give students. Each stamp has a description
+accompanying it. Stamps can also be different images.
+
+Prerequisites: None
+Installation: Copy the folder into "moodle/mod" and name the folder "stampcoll"
+
+Refer to the PDF documentation for more information: URL http://oohoo.biz/

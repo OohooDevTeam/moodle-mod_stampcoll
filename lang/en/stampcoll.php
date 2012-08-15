@@ -26,6 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['stampcoll:addinstance'] = 'Add a new StampCollection';
+
 $string['addstamp'] = 'Add new stamp';
 $string['addstampbutton'] = 'Add';
 $string['confirmdel'] = 'Do you really want to delete this stamp?';

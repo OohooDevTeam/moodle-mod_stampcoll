@@ -360,7 +360,7 @@ function xmldb_stampcoll_upgrade($oldversion = 0) {
     /**
      * Add a table to store information about stamp images
      */
-    if ($oldversion < 2012070500) {
+    if ($oldversion < 2012081500) {
         $table = new xmldb_table('stampcoll');
         $field = new xmldb_field('image');
         if ($dbman->field_exists($table, $field)) {
@@ -386,7 +386,7 @@ function xmldb_stampcoll_upgrade($oldversion = 0) {
             $dbman->add_field($table, $field);
         }
 
-        upgrade_mod_savepoint(true, 2012070500, 'stampcoll');
+        upgrade_mod_savepoint(true, 2012081500, 'stampcoll');
     }
 
     return true;
