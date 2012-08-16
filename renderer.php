@@ -47,7 +47,7 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
             $src = moodle_url::make_pluginfile_url($stamp->stampcoll->context->id, 'mod_stampcoll', 'image', $stamp->stampcoll->id, '/', $record->filename);
         }
 
-        $attributes = array('src' => $src, 'alt' => s($stamp->text), 'title' => s($stamp->text), 'class' => 'stamp');
+        $attributes = array('src' => $src, 'alt' => $stamp->text, 'title' => $stamp->text, 'class' => 'stamp');
         $stampimg = html_writer::empty_tag('img', $attributes);
 
         return $stampimg;
@@ -192,7 +192,6 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
         $table->head = array('', $sortbyname, $sortbycount, 'Text', 'Stamp', 'Given on', 'Given by', 'Action'); // TODO localize
 
         $imgvalues = array();
-        $imgvalues['pickastamp'] = get_string('pickastamp', 'mod_stampcoll');
         $records = $DB->get_records('stampcoll_images', array('stampcollid' => $collection->stampcoll->id));
         foreach ($records as $record) {
             $imgvalues[$record->id] = $record->name;
@@ -210,7 +209,9 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
 
             $textform = html_writer::tag('textarea', '', array('name' => 'addnewstamp['.$holder->id.']'));
 
-            $stamptype = html_writer::select($imgvalues, 'addnewtype['.$holder->id.']', null, false);
+            //Add pickastamp to front of array
+            $imgvaluestemp = array_merge(array('pickastamp' => get_string('pickastamp', 'mod_stampcoll')), $imgvalues);
+            $stamptype = html_writer::select($imgvaluestemp, 'addnewtype['.$holder->id.']', null, false);
 
             $row = new html_table_row(array($picture, $fullname, $count, $textform, $stamptype));
             $row->attributes['class'] = 'holderinfo';
@@ -238,10 +239,15 @@ class mod_stampcoll_renderer extends plugin_renderer_base {
                     } else {
                         $giver = '-';
                     }
+                    //If the stamp doesn't exist anymore, set the value to 0 (Default Stamp)
+                    $oldimg = $stamp->image;
+                    if (!array_key_exists($stamp->image, $imgvalues)) {
+                        $stamp->image = 0;
+                    }
                     $row = new html_table_row(array(
                         $newtext.$oldtext,
                         html_writer::select($imgvalues, 'stampnewtype['.$stamp->id.']', $stamp->image, false).html_writer::empty_tag('input',
-                            array('value' => s($stamp->image), 'type' => 'hidden', 'name' => 'stampoldtype['.$stamp->id.']')),
+                            array('value' => $oldimg, 'type' => 'hidden', 'name' => 'stampoldtype['.$stamp->id.']')),
                         userdate($stamp->timecreated, get_string('strftimedate', 'core_langconfig')),
                         $giver,
                         html_writer::link(new moodle_url($this->page->url, array('delete' => $stamp->id)), get_string('deletestamp', 'mod_stampcoll')),

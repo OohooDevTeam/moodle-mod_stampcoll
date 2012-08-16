@@ -74,7 +74,7 @@ if ($view == 'single' and $userid == $USER->id) {
     $view = 'own';
 }
 
-$PAGE->set_url(new moodle_url('/mod/stampcoll/view.php', array('id' => $cmid, 'view' => $view)));
+$PAGE->set_url(new moodle_url('/mod/stampcoll/view.php', array('id' => $cmid, 'view' => $view, 'sortby' => $sortby, 'sorthow' => $sorthow)));
 $PAGE->set_title($stampcoll->name);
 $PAGE->set_heading($course->fullname);
 

@@ -56,7 +56,7 @@ require_login($course, true, $cm);
 
 $stampcoll = new stampcoll($stampcoll, $cm, $course);
 
-$PAGE->set_url(new moodle_url('/mod/stampcoll/managestamps.php', array('cmid' => $cmid)));
+$PAGE->set_url(new moodle_url('/mod/stampcoll/managestamps.php', array('cmid' => $cmid, 'sortby' => $sortby, 'sorthow' => $sorthow)));
 $PAGE->set_title($stampcoll->name);
 $PAGE->set_heading($course->fullname);
 
