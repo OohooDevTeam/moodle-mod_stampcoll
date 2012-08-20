@@ -1,29 +1,22 @@
 <?php
 
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/* * **********************************************************************
+ * *                          Stamp Collection                           **
+ * ************************************************************************
+ * @package     mod                                                      **
+ * @subpackage  stampcoll                                                **
+ * @name        StampColl                                                **
+ * @copyright   oohoo.biz                                                **
+ * @link        http://oohoo.biz                                         **
+ * @author      Braedan Jongerius <jongeriu@ualberta.ca>                 **
+ * @author      David Mudrak <david@moodle.com> (Original author)        **
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later **
+ * ************************************************************************
+ * ********************************************************************** */
 
 /**
  * Keeps track of upgrades to the Stamp collection module
- *
- * @package    mod
- * @subpackage stampcoll
- * @copyright  2007 David Mudrak <david@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -50,40 +43,40 @@ function xmldb_stampcoll_upgrade($oldversion = 0) {
      * Rename field text to intro
      */
     if ($oldversion < 2011070100) {
-       $table = new xmldb_table('stampcoll');
-       $field = new xmldb_field('text', XMLDB_TYPE_TEXT, 'small', null, XMLDB_NOTNULL, null, null, 'name');
-       $dbman->rename_field($table, $field, 'intro');
-       upgrade_mod_savepoint(true, 2011070100, 'stampcoll');
+        $table = new xmldb_table('stampcoll');
+        $field = new xmldb_field('text', XMLDB_TYPE_TEXT, 'small', null, XMLDB_NOTNULL, null, null, 'name');
+        $dbman->rename_field($table, $field, 'intro');
+        upgrade_mod_savepoint(true, 2011070100, 'stampcoll');
     }
 
     /**
      * Make intro field nullable
      */
     if ($oldversion < 2011070101) {
-       $table = new xmldb_table('stampcoll');
-       $field = new xmldb_field('intro', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'name');
-       $dbman->change_field_notnull($table, $field);
-       upgrade_mod_savepoint(true, 2011070101, 'stampcoll');
+        $table = new xmldb_table('stampcoll');
+        $field = new xmldb_field('intro', XMLDB_TYPE_TEXT, 'small', null, null, null, null, 'name');
+        $dbman->change_field_notnull($table, $field);
+        upgrade_mod_savepoint(true, 2011070101, 'stampcoll');
     }
 
     /**
      * Make intro field big
      */
     if ($oldversion < 2011070102) {
-       $table = new xmldb_table('stampcoll');
-       $field = new xmldb_field('intro', XMLDB_TYPE_TEXT, 'big', null, null, null, null, 'name');
-       $dbman->change_field_precision($table, $field);
-       upgrade_mod_savepoint(true, 2011070102, 'stampcoll');
+        $table = new xmldb_table('stampcoll');
+        $field = new xmldb_field('intro', XMLDB_TYPE_TEXT, 'big', null, null, null, null, 'name');
+        $dbman->change_field_precision($table, $field);
+        upgrade_mod_savepoint(true, 2011070102, 'stampcoll');
     }
 
     /**
      * Rename field format to introformat
      */
     if ($oldversion < 2011070103) {
-       $table = new xmldb_table('stampcoll');
-       $field = new xmldb_field('format', XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'intro');
-       $dbman->rename_field($table, $field, 'introformat');
-       upgrade_mod_savepoint(true, 2011070103, 'stampcoll');
+        $table = new xmldb_table('stampcoll');
+        $field = new xmldb_field('format', XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'intro');
+        $dbman->rename_field($table, $field, 'introformat');
+        upgrade_mod_savepoint(true, 2011070103, 'stampcoll');
     }
 
     //==== 2.0 upgrade line ====
@@ -305,16 +298,16 @@ function xmldb_stampcoll_upgrade($oldversion = 0) {
             if ($imagefilepath == '.') {
                 $imagefilepath = '/';
             } else {
-                $imagefilepath = '/'.$imagefilepath.'/';
+                $imagefilepath = '/' . $imagefilepath . '/';
             }
             $legacyimage = $fs->get_file($coursecontext->id, 'course', 'legacy', 0, $imagefilepath, $imagefilename);
             if ($legacyimage instanceof stored_file) {
                 $filerecord = array('contextid' => $context->id,
-                                    'component' => 'mod_stampcoll',
-                                    'filearea'  => 'image',
-                                    'itemid'    => 0,
-                                    'filepath'  => '/',
-                                    'filename'  => $imagefilename);
+                    'component' => 'mod_stampcoll',
+                    'filearea' => 'image',
+                    'itemid' => 0,
+                    'filepath' => '/',
+                    'filename' => $imagefilename);
                 $stampimage = $fs->create_file_from_storedfile($filerecord, $legacyimage);
                 $DB->set_field('stampcoll', 'image', '/UPGRADEINPROGRESS/', array('id' => $stampcoll->id));
             } else {
@@ -345,8 +338,8 @@ function xmldb_stampcoll_upgrade($oldversion = 0) {
             $context = get_context_instance(CONTEXT_MODULE, $stampcoll->cmid);
             foreach ($fs->get_area_files($context->id, 'mod_stampcoll', 'image', 0, 'timemodified DESC', false) as $storedfile) {
                 $imagefilename = $storedfile->get_filename();
-                if (! $storedfile->is_valid_image()) {
-                    echo $OUTPUT->notification('Invalid stamp image '.$imagefilename.' in the stampcoll id '.$stampcoll->id.' (cmid '.$stampcoll->cmid.')');
+                if (!$storedfile->is_valid_image()) {
+                    echo $OUTPUT->notification('Invalid stamp image ' . $imagefilename . ' in the stampcoll id ' . $stampcoll->id . ' (cmid ' . $stampcoll->cmid . ')');
                 }
                 break;
             }

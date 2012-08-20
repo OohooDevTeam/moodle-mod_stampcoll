@@ -1,44 +1,37 @@
 <?php
 
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/* * **********************************************************************
+ * *                          Stamp Collection                           **
+ * ************************************************************************
+ * @package     mod                                                      **
+ * @subpackage  stampcoll                                                **
+ * @name        StampColl                                                **
+ * @copyright   oohoo.biz                                                **
+ * @link        http://oohoo.biz                                         **
+ * @author      Braedan Jongerius <jongeriu@ualberta.ca>                 **
+ * @author      David Mudrak <david@moodle.com> (Original author)        **
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later **
+ * ************************************************************************
+ * ********************************************************************** */
 
 /**
  * Stamps management screen
- *
- * @package    mod
- * @subpackage stampcoll
- * @copyright  2011 David Mudrak <david@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once(dirname(__FILE__) . '/locallib.php');
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/locallib.php');
-
-$cmid       = required_param('cmid', PARAM_INT);                                // course module id
-$sortby     = optional_param('sortby', 'lastname', PARAM_ALPHA);                // sort by column
-$sorthow    = optional_param('sorthow', 'ASC', PARAM_ALPHA);                    // sort direction
-$page       = optional_param('page', 0, PARAM_INT);                             // page
+$cmid = required_param('cmid', PARAM_INT);                                // course module id
+$sortby = optional_param('sortby', 'lastname', PARAM_ALPHA);                // sort by column
+$sorthow = optional_param('sorthow', 'ASC', PARAM_ALPHA);                    // sort direction
+$page = optional_param('page', 0, PARAM_INT);                             // page
 $updatepref = optional_param('updatepref', false, PARAM_BOOL);                  // is the preferences form being saved
-$perpage    = optional_param('perpage', stampcoll::USERS_PER_PAGE, PARAM_INT);  // users per page preference
-$delete     = optional_param('delete', null, PARAM_INT);                        // stamp id to delete
-$confirmed  = optional_param('confirmed', false, PARAM_BOOL);                   // confirm the operation
+$perpage = optional_param('perpage', stampcoll::USERS_PER_PAGE, PARAM_INT);  // users per page preference
+$delete = optional_param('delete', null, PARAM_INT);                        // stamp id to delete
+$confirmed = optional_param('confirmed', false, PARAM_BOOL);                   // confirm the operation
 
-$cm         = get_coursemodule_from_id('stampcoll', $cmid, 0, false, MUST_EXIST);
-$course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-$stampcoll  = $DB->get_record('stampcoll', array('id' => $cm->instance), '*', MUST_EXIST);
+$cm = get_coursemodule_from_id('stampcoll', $cmid, 0, false, MUST_EXIST);
+$course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+$stampcoll = $DB->get_record('stampcoll', array('id' => $cm->instance), '*', MUST_EXIST);
 
 if (!in_array($sortby, array('firstname', 'lastname', 'count'))) {
     $sortby = 'lastname';
@@ -62,7 +55,7 @@ $PAGE->set_heading($course->fullname);
 
 require_capability('mod/stampcoll:managestamps', $stampcoll->context);
 
-add_to_log($course->id, 'stampcoll', 'manage', 'view.php?id='.$cm->id, $stampcoll->id, $cm->id);
+add_to_log($course->id, 'stampcoll', 'manage', 'view.php?id=' . $cm->id, $stampcoll->id, $cm->id);
 
 $output = $PAGE->get_renderer('mod_stampcoll');
 
@@ -81,14 +74,12 @@ if ($delete) {
     if (!$confirmed) {
         // let the user confirm
         echo $output->header();
-        echo $output->confirm($output->render($stamp) . ' ' . get_string('deletestampconfirm', 'mod_stampcoll'),
-            new moodle_url($PAGE->url, array('delete' => $stamp->id, 'confirmed' => 1)),
-            $PAGE->url);
+        echo $output->confirm($output->render($stamp) . ' ' . get_string('deletestampconfirm', 'mod_stampcoll'), new moodle_url($PAGE->url, array('delete' => $stamp->id, 'confirmed' => 1)), $PAGE->url);
         echo $output->footer();
         die();
     } else {
         require_sesskey();
-        add_to_log($course->id, 'stampcoll', 'delete stamp', 'view.php?id='.$cm->id, $stamp->holderid, $cm->id);
+        add_to_log($course->id, 'stampcoll', 'delete stamp', 'view.php?id=' . $cm->id, $stamp->holderid, $cm->id);
         $DB->delete_records('stampcoll_stamps', array('id' => $stamp->id));
         redirect($PAGE->url);
     }
@@ -109,7 +100,7 @@ if ($data = data_submitted()) {
                 continue;
             }
             if (!in_array($holderid, $holderids)) {
-                debugging('Invalid stamp recipient '.$holderid);
+                debugging('Invalid stamp recipient ' . $holderid);
                 continue;
             }
             $text = trim($text);
@@ -121,16 +112,15 @@ if ($data = data_submitted()) {
                 continue;
             }
 
-            add_to_log($course->id, 'stampcoll', 'add stamp', 'view.php?id='.$cm->id, $holderid, $cm->id);
+            add_to_log($course->id, 'stampcoll', 'add stamp', 'view.php?id=' . $cm->id, $holderid, $cm->id);
 
             $DB->insert_record('stampcoll_stamps', array(
-                'stampcollid'   => $stampcoll->id,
-                'userid'        => $holderid,
-                'giver'         => $USER->id,
-                'text'          => $text,
-                'image'         => $image,
-                'timecreated'   => $now),
-            false, true);
+                'stampcollid' => $stampcoll->id,
+                'userid' => $holderid,
+                'giver' => $USER->id,
+                'text' => $text,
+                'image' => $image,
+                'timecreated' => $now), false, true);
         }
     }
 
@@ -151,7 +141,7 @@ if ($data = data_submitted()) {
                 continue;
             }
             if (!in_array($stampid, $stampids)) {
-                debugging('Invalid stamp record '.$stampid);
+                debugging('Invalid stamp record ' . $stampid);
                 continue;
             }
             $current = $stamps[$stampid];
@@ -166,7 +156,7 @@ if ($data = data_submitted()) {
                 $update->timemodified = $now;
                 $update->modifier = $USER->id;
 
-                add_to_log($course->id, 'stampcoll', 'update stamp', 'view.php?id='.$cm->id, $current->userid, $cm->id);
+                add_to_log($course->id, 'stampcoll', 'update stamp', 'view.php?id=' . $cm->id, $current->userid, $cm->id);
 
                 $DB->update_record('stampcoll_stamps', $update, true);
             }
@@ -187,7 +177,7 @@ if ($data = data_submitted()) {
                 continue;
             }
             if (!in_array($stampid, $stampids)) {
-                debugging('Invalid stamp record '.$stampid);
+                debugging('Invalid stamp record ' . $stampid);
                 continue;
             }
             $current = $stamps[$stampid];
@@ -197,7 +187,7 @@ if ($data = data_submitted()) {
                 $update->id = $stampid;
                 $update->name = $name;
 
-                add_to_log($course->id, 'stampcoll', 'update stamp names', 'view.php?id='.$cm->id, $USER->id, $cm->id);
+                add_to_log($course->id, 'stampcoll', 'update stamp names', 'view.php?id=' . $cm->id, $USER->id, $cm->id);
 
                 $DB->update_record('stampcoll_images', $update, true);
             }
@@ -215,7 +205,6 @@ $groupmode = groups_get_activity_groupmode($cm);
 
 if ($groupmode == NOGROUPS) {
     $groupid = false;
-
 } else {
     groups_print_activity_menu($cm, $PAGE->url);
     $groupid = groups_get_activity_group($cm);
@@ -257,21 +246,21 @@ $perpage = get_user_preferences('stampcoll_perpage', stampcoll::USERS_PER_PAGE);
 $userids = array_keys($DB->get_records_sql($sql, $params, $page * $perpage, $perpage));
 
 // prepare the renderable collection
-$collection             = new stampcoll_management_collection($stampcoll, $userids);
-$collection->sortedby   = $sortby;
-$collection->sortedhow  = $sorthow;
-$collection->page       = $page;
-$collection->perpage    = $perpage;
+$collection = new stampcoll_management_collection($stampcoll, $userids);
+$collection->sortedby = $sortby;
+$collection->sortedhow = $sorthow;
+$collection->page = $page;
+$collection->perpage = $perpage;
 $collection->totalcount = $totalcount;
 
 if ($userids) {
     // in the third query, get all stamps info to display
     list($holdersql, $holderparam) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
 
-    $sql = "SELECT ".user_picture::fields('hu', null, 'holderid', 'holder').",
+    $sql = "SELECT " . user_picture::fields('hu', null, 'holderid', 'holder') . ",
                    s.id AS stampid, s.text AS stamptext, s.image AS image,
-                   s.timecreated AS stamptimecreated, s.timemodified AS stamptimemodified,".
-                   user_picture::fields('gu', null, 'giverid', 'giver')."
+                   s.timecreated AS stamptimecreated, s.timemodified AS stamptimemodified," .
+            user_picture::fields('gu', null, 'giverid', 'giver') . "
               FROM {user} hu
          LEFT JOIN {stampcoll_stamps} s ON s.stampcollid = :stampcollid AND s.userid = hu.id
          LEFT JOIN {user} gu ON s.giver = gu.id AND gu.deleted = 0
@@ -289,14 +278,14 @@ if ($userids) {
             $collection->register_user(user_picture::unalias($record, null, 'giverid', 'giver'));
         }
         if (!empty($record->stampid)) {
-            $stamp = (object)array(
-                'id'            => $record->stampid,
-                'userid'        => $record->holderid,
-                'giver'         => $record->giverid,
-                'text'          => $record->stamptext,
-                'image'         => $record->image,
-                'timecreated'   => $record->stamptimecreated,
-                'timemodified'  => $record->stamptimemodified,
+            $stamp = (object) array(
+                        'id' => $record->stampid,
+                        'userid' => $record->holderid,
+                        'giver' => $record->giverid,
+                        'text' => $record->stamptext,
+                        'image' => $record->image,
+                        'timecreated' => $record->stamptimecreated,
+                        'timemodified' => $record->stamptimemodified,
             );
             $collection->add_stamp($stamp);
         }

@@ -1,32 +1,25 @@
 <?php
 
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+/* * **********************************************************************
+ * *                          Stamp Collection                           **
+ * ************************************************************************
+ * @package     mod                                                      **
+ * @subpackage  stampcoll                                                **
+ * @name        StampColl                                                **
+ * @copyright   oohoo.biz                                                **
+ * @link        http://oohoo.biz                                         **
+ * @author      Braedan Jongerius <jongeriu@ualberta.ca>                 **
+ * @author      David Mudrak <david@moodle.com> (Original author)        **
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later **
+ * ************************************************************************
+ * ********************************************************************** */
 
 /**
  * Defines a form to add or edit a stamp
- *
- * @package    mod
- * @subpackage stampcoll
- * @copyright  2011 David Mudrak <david@moodle.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/formslib.php');
+require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Defines a form to add or edit a stamp
@@ -40,7 +33,7 @@ class stampcoll_stamp_form extends moodleform {
         global $OUTPUT, $DB;
 
         $mform = $this->_form;
-        $data  = $this->_customdata;
+        $data = $this->_customdata;
 
         //----------------------------------------------------------------------
         if (empty($data['current'])) {
@@ -54,9 +47,7 @@ class stampcoll_stamp_form extends moodleform {
         //----------------------------------------------------------------------
         if (!empty($data['userfrom'])) {
             // we have the giver's details available - let us display them
-            $mform->addElement('static', 'from',
-                get_string('from'),
-                $OUTPUT->user_picture($data['userfrom'], array('size' => 16)).' '.fullname($data['userfrom']));
+            $mform->addElement('static', 'from', get_string('from'), $OUTPUT->user_picture($data['userfrom'], array('size' => 16)) . ' ' . fullname($data['userfrom']));
         }
 
         //----------------------------------------------------------------------
@@ -76,8 +67,7 @@ class stampcoll_stamp_form extends moodleform {
         //----------------------------------------------------------------------
         $mform->addGroup(array(
             $mform->createElement('submit', 'submit', get_string('addstampbutton', 'stampcoll')),
-            $mform->createElement('cancel', 'cancel', get_string('cancel'))),
-            'controlbuttons', '&nbsp;', array(' '), false);
+            $mform->createElement('cancel', 'cancel', get_string('cancel'))), 'controlbuttons', '&nbsp;', array(' '), false);
 
         //----------------------------------------------------------------------
         $mform->addElement('hidden', 'userto');
@@ -86,4 +76,5 @@ class stampcoll_stamp_form extends moodleform {
         $mform->addElement('hidden', 'userfrom');
         $mform->setType('userfrom', PARAM_INT);
     }
+
 }
